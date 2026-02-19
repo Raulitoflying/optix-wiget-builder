@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Optix Widget Builder</title>
+  <link rel="icon" type="image/png" href="assets/Optix.png">
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/clockpicker@0.0.7/dist/bootstrap-clockpicker.min.css" rel="stylesheet">
+  <link href="css/styles.css" rel="stylesheet">
+</head>
+<body>
+
+<!-- ══════ API Config Modal ══════ -->
+<div class="overlay hidden" id="apiOverlay" onclick="if(event.target === this) cancelModal()">
+  <div class="modal">
+    <div class="modal-header">
+      <h2>API Configuration</h2>
+      <p>Enter your Optix API credentials to get started</p>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="cfgEndpoint" value="https://api.optixapp.com/graphql">
+      <div class="form-group">
+        <label>Authorization Token</label>
+        <input type="text" id="cfgToken" placeholder="Paste your Optix Bearer token here">
+        <div class="hint">Token ending with "o" = Organization token, "p" = Personal token</div>
+      </div>
+      <div id="cfgError" class="alert alert-error" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" id="cfgConnect" onclick="handleConnectAction()">
+          <span class="material-icons" style="font-size:18px">login</span>
+          Connect
+        </button>
+        <button class="btn btn-outline" id="cfgCancel" onclick="cancelModal()">
+          Cancel
+        </button>
+        <button class="btn btn-danger" id="cfgDisconnect" onclick="confirmDisconnect()" style="display:none;">
+          <span class="material-icons" style="font-size:18px">logout</span>
+          Disconnect
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════ Top Bar ══════ -->
+<div class="topbar">
+  <div class="topbar-left">
+    <img src="assets/Optix.png" alt="Optix" class="topbar-logo">
+    <span class="topbar-title">Widget Builder</span>
+  </div>
+  <div class="topbar-right">
+    <div class="api-status" id="apiStatus">
+      <span class="dot"></span>
+      <span id="apiStatusText">Not connected</span>
+    </div>
+    <button class="btn-icon" title="API Settings" onclick="showApiModal()">
+      <span class="material-icons" style="font-size:20px">settings</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════ Main Content ══════ -->
+<div class="main disabled" id="mainContent">
+
+  <!-- Venue -->
+  <div class="venue-row">
+    <div class="form-group venue-card">
+      <div class="venue-head">
+        <label>Venue URL Base</label>
+        <span class="venue-badge">Workspace Domain</span>
+      </div>
+      <div class="url-box">
+        <input type="text" id="venueBase" readonly>
+        <button class="copy-btn open-btn" onclick="openUrl('venueBase')" title="Open link in new tab">
+          <span class="material-icons" style="font-size:18px">open_in_new</span>
+        </button>
+        <button class="copy-btn" onclick="copyUrl('venueBase', this)">
+          <span class="material-icons" style="font-size:18px">content_copy</span>
+        </button>
+      </div>
+      <div class="hint">This base URL is auto-detected from your connected organization.</div>
+    </div>
+  </div>
+
+  <!-- Widget Type Tabs -->
+  <div class="tabs">
+    <button class="tab" data-type="signup" onclick="switchTab('signup')">Sign-up</button>
+    <button class="tab" data-type="dropin" onclick="switchTab('dropin')">Drop-in Bookings</button>
+  </div>
+
+  <!-- ── Sign-up Section ── -->
+  <div id="section-signup" style="display:none;">
+    <div class="section-toolbar">
+      <div class="section-intro">
+        Build sign-up links by selecting plans and passes, then copy or open the generated URL instantly.
+      </div>
+      <div class="section-actions">
+        <button type="button" class="btn btn-sm btn-muted" onclick="resetSignupParams()">
+          <span class="material-icons" style="font-size:16px">restart_alt</span> Reset
+        </button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="refreshData()">
+          <span class="material-icons" style="font-size:16px">refresh</span> Refresh
+        </button>
+      </div>
+    </div>
+    <!-- Location Filter -->
+    <div class="card collapsed" id="signupLocationCard">
+      <div class="card-header is-collapsible" role="button" tabindex="0" aria-expanded="false" onclick="toggleCardCollapse('signupLocationCard', this)" onkeydown="handleCardHeaderKeydown('signupLocationCard', this, event)">
+        <div class="card-title-wrap">
+          <h3>Location Filter</h3>
+          <p class="card-subtitle">Optional pre-selection to guide users into a specific location.</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn-icon btn-collapse" tabindex="-1" aria-hidden="true" title="Collapse section">
+            <span class="material-icons" style="font-size:20px">expand_more</span>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="signupLocationLoading" class="loading-spinner" style="display:none;">
+          <div class="spinner"></div>
+          Loading locations...
+        </div>
+        <div id="signupLocationContent">
+          <div class="form-group" style="margin-bottom:0;">
+            <label>Pre-select Location (optional)</label>
+            <select id="signupLocation" title="Select location" onchange="updateSignupUrls()">
+              <option value="">No location pre-selected (user chooses)</option>
+            </select>
+            <div class="hint">If set, the signup widget will pre-select this location for the user.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Plans & Passes -->
+    <div class="card collapsed" id="signupPlansCard">
+      <div class="card-header is-collapsible" role="button" tabindex="0" aria-expanded="false" onclick="toggleCardCollapse('signupPlansCard', this)" onkeydown="handleCardHeaderKeydown('signupPlansCard', this, event)">
+        <div class="card-title-wrap">
+          <h3>Select Plans & Passes</h3>
+          <p class="card-subtitle">Choose what appears in the widget and keep hidden items visible for reference.</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn-icon btn-collapse" tabindex="-1" aria-hidden="true" title="Collapse section">
+            <span class="material-icons" style="font-size:20px">expand_more</span>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="signupUserFlowLoading" class="loading-spinner" style="display:none;">
+          <div class="spinner"></div>
+          Loading user flow...
+        </div>
+        <div id="signupUserFlowContent">
+          <div class="form-group" style="margin-bottom:14px;">
+            <label>User Flow</label>
+            <input type="text" id="signupUserFlowDisplay" value="Loading..." readonly>
+            <div class="hint">Configured in organization settings; read-only here.</div>
+          </div>
+        </div>
+        <div id="planPassLoading" class="loading-spinner">
+          <div class="spinner"></div>
+          Loading plans & passes...
+        </div>
+        <div id="planPassError" class="alert alert-error" style="display:none;"></div>
+        <div id="planPassList" class="item-list" style="display:none;"></div>
+      </div>
+    </div>
+
+    <!-- Arrange Order -->
+    <div class="card" id="orderCard" style="display:none;">
+      <div class="card-header">
+        <div class="card-title-wrap">
+          <h3>Arrange Display Order</h3>
+          <p class="card-subtitle">Drag selected items to define the exact order users will see.</p>
+        </div>
+        <span style="font-size:12px;color:#999;">Drag to reorder</span>
+      </div>
+      <div class="card-body">
+        <div id="sortableList" class="sortable-list"></div>
+        <div id="orderEmpty" class="empty-state">Select items above to arrange order</div>
+      </div>
+    </div>
+
+    <!-- Generated URLs -->
+    <div class="card" id="urlCard" style="display:none;">
+      <div class="card-header">
+        <div class="card-title-wrap">
+          <h3>Generated URLs & Embed Code</h3>
+          <p class="card-subtitle">Use Combined Link for filters; use embed and pop-up snippets for website integration.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="url-group">
+          <div class="url-label">Combined Link</div>
+          <div class="url-box">
+            <input type="text" id="combinedUrl" readonly>
+            <button class="copy-btn open-btn" onclick="openUrl('combinedUrl')" title="Open link in new tab">
+              <span class="material-icons" style="font-size:18px">open_in_new</span>
+            </button>
+            <button class="copy-btn" onclick="copyUrl('combinedUrl', this)">
+              <span class="material-icons" style="font-size:18px">content_copy</span>
+            </button>
+          </div>
+        </div>
+        <div class="url-group" id="embedCodeGroup" style="display:none;">
+          <div class="url-label">Embed Code (inline)</div>
+          <div class="url-box">
+            <textarea id="embedCode" readonly rows="5"></textarea>
+            <button class="copy-btn" onclick="copyUrl('embedCode', this)">
+              <span class="material-icons" style="font-size:18px">content_copy</span>
+            </button>
+          </div>
+        </div>
+        <div class="url-group" id="popupCodeGroup" style="display:none;">
+          <div class="url-label">Pop-up Code</div>
+          <div class="url-box">
+            <textarea id="popupCode" readonly rows="4"></textarea>
+            <button class="copy-btn" onclick="copyUrl('popupCode', this)">
+              <span class="material-icons" style="font-size:18px">content_copy</span>
+            </button>
+          </div>
+        </div>
+        <div class="individual-links" id="individualLinks"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Drop-in Section ── -->
+  <div id="section-dropin" style="display:none;">
+    <div class="section-toolbar">
+      <div class="section-intro">
+        Configure booking defaults and generate direct links or embed snippets for Drop-in Bookings.
+      </div>
+      <div class="section-actions">
+        <button type="button" class="btn btn-sm btn-muted" onclick="resetDropinParams()">
+          <span class="material-icons" style="font-size:16px">restart_alt</span> Reset
+        </button>
+        <button type="button" class="btn btn-sm btn-outline" onclick="refreshData()">
+          <span class="material-icons" style="font-size:16px">refresh</span> Refresh
+        </button>
+      </div>
+    </div>
+    <div class="card collapsed" id="dropinParamsCard">
+      <div class="card-header is-collapsible" role="button" tabindex="0" aria-expanded="false" onclick="toggleCardCollapse('dropinParamsCard', this)" onkeydown="handleCardHeaderKeydown('dropinParamsCard', this, event)">
+        <div class="card-title-wrap">
+          <h3>Booking Parameters</h3>
+          <p class="card-subtitle">Set location, resource, and booking defaults to prefill the booking flow.</p>
+        </div>
+        <div class="header-actions">
+          <button type="button" class="btn-icon btn-collapse" tabindex="-1" aria-hidden="true" title="Collapse section">
+            <span class="material-icons" style="font-size:20px">expand_more</span>
+          </button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div id="dropinLoading" class="loading-spinner">
+          <div class="spinner"></div>
+          Loading resources & locations...
+        </div>
+        <div id="dropinParams" style="display:none;">
+          <div class="params-grid">
+            <div class="form-group">
+              <label>Location</label>
+              <select id="diLocation" onchange="updateDropinUrls()">
+                <option value="">All locations</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Resource Type</label>
+              <select id="diType" onchange="updateDropinUrls()">
+                <option value="">All types</option>
+              </select>
+              <div class="resource-info" id="diTypeInfo">
+                <div class="info-text" id="diTypeInfoText"></div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Specific Resource</label>
+              <select id="diResource" onchange="updateDropinUrls()">
+                <option value="">None (show all)</option>
+              </select>
+              <div class="hint">When selected, Location/Type/Capacity filters are disabled (not applicable)</div>
+              <div class="resource-warning" id="diResourceWarning">
+                <div class="warning-text">This resource is set to "Only admins can book"</div>
+                <div class="warning-hint">Drop-in booking is enabled, but public users won't be able to book this resource. The widget code will still be generated.</div>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>Default Duration</label>
+              <div class="duration-inputs">
+                <div class="duration-field">
+                  <input type="number" id="diDurationHours" min="0" max="24" placeholder="0" oninput="validateDurationInput(this, 24); updateDropinUrls()" onblur="validateDurationInput(this, 24)">
+                  <span class="duration-unit">hours</span>
+                </div>
+                <div class="duration-field">
+                  <input type="number" id="diDurationMinutes" min="0" max="59" placeholder="0" oninput="validateDurationInput(this, 59); updateDropinUrls()" onblur="validateDurationInput(this, 59)">
+                  <span class="duration-unit">minutes</span>
+                </div>
+              </div>
+              <div class="hint">Leave empty for no default duration</div>
+            </div>
+            <div class="form-group">
+              <label>Default Capacity</label>
+              <input type="number" id="diCapacity" min="1" placeholder="Any" onchange="updateDropinUrls()">
+            </div>
+            <div class="form-group">
+              <label>Default Date</label>
+              <input type="date" id="diDate" max="9999-12-31" onchange="updateDropinUrls()">
+            </div>
+            <div class="form-group">
+              <label>Default Time</label>
+              <div class="input-with-icon">
+                <input type="text" id="diTime" placeholder="HH:MM (e.g., 09:30)" onchange="updateDropinUrls()">
+                <button type="button" class="input-icon-btn" id="diTimeBtn" title="Pick time">
+                  <span class="material-icons">schedule</span>
+                </button>
+              </div>
+              <div class="hint">Type time or click clock icon</div>
+              <div class="input-error" id="diTimeError">Invalid time format. Use HH:MM (e.g., 09:30)</div>
+            </div>
+            <div class="form-group">
+              <label>Skip to Picker</label>
+              <select id="diPicker" onchange="updateDropinUrls()">
+                <option value="">No</option>
+                <option value="true">Yes</option>
+              </select>
+              <div class="hint">Requires a Specific Resource to be selected</div>
+            </div>
+            <div class="form-group">
+              <label>Resource Availability</label>
+              <input type="text" id="availabilityDisplay" value="Loading..." readonly>
+              <div class="hint">Configured in organization settings; read-only here.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Drop-in Generated URLs -->
+    <div class="card" id="dropinUrlCard" style="display:none;">
+      <div class="card-header">
+        <div class="card-title-wrap">
+          <h3>Generated URLs & Embed Code</h3>
+          <p class="card-subtitle">Direct links are best for campaigns; embed and pop-up are best for website pages.</p>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="url-group">
+          <div class="url-label">Direct Link</div>
+          <div class="url-box">
+            <input type="text" id="dropinDirectUrl" readonly>
+            <button class="copy-btn open-btn" onclick="openUrl('dropinDirectUrl')" title="Open link in new tab">
+              <span class="material-icons" style="font-size:18px">open_in_new</span>
+            </button>
+            <button class="copy-btn" onclick="copyUrl('dropinDirectUrl', this)">
+              <span class="material-icons" style="font-size:18px">content_copy</span>
+            </button>
+          </div>
+          <div id="directLinkWarning" class="inline-note inline-note-warning" style="display:none;">
+            <strong>Note:</strong> Direct Link only supports Date and Specific Resource parameters. Use Embed/Pop-up codes below for Location, Type, Duration, Capacity, and Time filtering.
+          </div>
+        </div>
+        <div class="url-group">
+          <div class="url-label">Embed Code (inline)</div>
+          <div class="url-box">
+            <textarea id="dropinEmbedCode" readonly rows="6"></textarea>
+            <button class="copy-btn" onclick="copyUrl('dropinEmbedCode', this)">
+              <span class="material-icons" style="font-size:18px">content_copy</span>
+            </button>
+          </div>
+        </div>
+        <div class="url-group">
+          <div class="url-label">Pop-up Code</div>
+          <div class="url-box">
+            <textarea id="dropinPopupCode" readonly rows="4"></textarea>
+            <button class="copy-btn" onclick="copyUrl('dropinPopupCode', this)">
+              <span class="material-icons" style="font-size:18px">content_copy</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ══════ Toast ══════ -->
+<div class="toast" id="toast"></div>
+
+<!-- ══════ External Scripts ══════ -->
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.6/Sortable.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/clockpicker@0.0.7/dist/bootstrap-clockpicker.min.js"></script>
+<script src="js/main.js"></script>
+<script src="js/api.js"></script>
+<script src="js/signup.js"></script>
+<script src="js/dropin.js"></script>
+
+</body>
+</html>
