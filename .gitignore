@@ -1,0 +1,30 @@
+# macOS
+.DS_Store
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env / secrets
+.env
+.env.*
+!.env.example
+
+# Dependencies / build outputs
+node_modules/
+dist/
+build/
+coverage/
+
+# Editor / tooling
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Python cache (if using local static server scripts)
+__pycache__/
+*.pyc
