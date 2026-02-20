@@ -266,9 +266,9 @@ function init() {
   const savedEndpoint = sessionStorage.getItem('optix_endpoint') || 'https://api.optixapp.com/graphql';
 
   if (urlToken) {
+    showApiModal();
     document.getElementById('cfgEndpoint').value = savedEndpoint;
     document.getElementById('cfgToken').value = urlToken;
-    showApiModal();
     connectAPI();
   } else if (savedToken) {
     // Auto-reconnect with saved credentials
