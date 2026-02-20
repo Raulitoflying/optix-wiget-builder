@@ -251,7 +251,11 @@ function init() {
   // and hash (#token=) forms.
   const queryParams = new URLSearchParams(window.location.search);
   const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
-  const urlToken = queryParams.get('token') || hashParams.get('token');
+  const urlToken =
+    queryParams.get('token') ||
+    hashParams.get('token') ||
+    queryParams.get('access_token') ||
+    hashParams.get('access_token');
 
   // Clean up old localStorage credentials from previous versions
   localStorage.removeItem('optix_token');
