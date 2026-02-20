@@ -247,9 +247,11 @@ function init() {
     switchTab('signup');
   }
 
-  // Check for token in URL (Canvas mode)
-  const params = new URLSearchParams(window.location.search);
-  const urlToken = params.get('token');
+  // Check for token in URL (Canvas mode): supports both query (?token=)
+  // and hash (#token=) forms.
+  const queryParams = new URLSearchParams(window.location.search);
+  const hashParams = new URLSearchParams((window.location.hash || '').replace(/^#/, ''));
+  const urlToken = queryParams.get('token') || hashParams.get('token');
 
   // Clean up old localStorage credentials from previous versions
   localStorage.removeItem('optix_token');
