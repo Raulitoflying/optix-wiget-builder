@@ -181,19 +181,56 @@ function switchTab(type) {
 // ── Utility Functions ──────────────────────────────────────────────────────────
 function copyUrl(inputId, btn) {
   const el = document.getElementById(inputId);
-  const text = el.value || el.textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    if (btn) {
-      btn.classList.add('copied');
-      btn.innerHTML = '<span class="material-icons" style="font-size:18px">check</span>';
-      setTimeout(() => {
-        btn.classList.remove('copied');
-        btn.innerHTML = '<span class="material-icons" style="font-size:18px">content_copy</span>';
-      }, 1500);
+  const text = el?.value || el?.textContent || '';
+  const setCopiedState = () => {
+    if (!btn) return;
+    btn.classList.add('copied');
+    btn.innerHTML = '<span class="material-icons" style="font-size:18px">check</span>';
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      btn.innerHTML = '<span class="material-icons" style="font-size:18px">content_copy</span>';
+    }, 1500);
+  };
+
+  const selectElementText = () => {
+    if (!el) return;
+    if (typeof el.select === 'function') {
+      el.focus();
+      el.select();
+      if (typeof el.setSelectionRange === 'function') {
+        el.setSelectionRange(0, String(text).length);
+      }
+      return;
     }
+
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const selection = window.getSelection();
+    selection.removeAllRanges();
+    selection.addRange(range);
+  };
+
+  const legacyCopy = () => {
+    selectElementText();
+    try {
+      return document.execCommand('copy');
+    } catch {
+      return false;
+    }
+  };
+
+  navigator.clipboard.writeText(text).then(() => {
+    setCopiedState();
     showToast('Copied to clipboard');
   }).catch(() => {
-    showToast('Copy failed. Please copy manually.');
+    if (legacyCopy()) {
+      setCopiedState();
+      showToast('Copied to clipboard');
+      return;
+    }
+    selectElementText();
+    const isMac = /mac/i.test(navigator.platform);
+    showToast(`Copy blocked by browser policy. Press ${isMac ? 'Cmd+C' : 'Ctrl+C'}.`);
   });
 }
 
