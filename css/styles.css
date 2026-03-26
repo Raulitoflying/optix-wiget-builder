@@ -263,7 +263,7 @@ body {
   object-fit: contain;
 }
 .topbar-title {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 600;
   letter-spacing: .2px;
   color: var(--text-main);
