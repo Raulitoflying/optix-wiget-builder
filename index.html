@@ -3,9 +3,28 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Optix Widget Builder</title>
+  <title>Form Builder</title>
   <link rel="icon" type="image/png" href="assets/Optix.png">
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <style>
+    @font-face {
+      font-family: "Graphik";
+      src: url("https://api.optixapp.com/ui-kit/fonts/Graphik-Regular-Web.woff2") format("woff2"),
+           url("https://api.optixapp.com/ui-kit/fonts/Graphik-Regular-Web.woff") format("woff");
+      font-weight: 400; font-style: normal;
+    }
+    @font-face {
+      font-family: "Graphik";
+      src: url("https://api.optixapp.com/ui-kit/fonts/Graphik-Medium-Web.woff2") format("woff2"),
+           url("https://api.optixapp.com/ui-kit/fonts/Graphik-Medium-Web.woff") format("woff");
+      font-weight: 500; font-style: normal;
+    }
+    @font-face {
+      font-family: "Graphik";
+      src: url("https://api.optixapp.com/ui-kit/fonts/Graphik-Semibold.woff2") format("woff2"),
+           url("https://api.optixapp.com/ui-kit/fonts/Graphik-Semibold.woff") format("woff");
+      font-weight: 600; font-style: normal;
+    }
+  </style>
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/clockpicker@0.0.7/dist/bootstrap-clockpicker.min.css" rel="stylesheet">
   <link href="css/styles.css" rel="stylesheet">
@@ -47,8 +66,7 @@
 <!-- ══════ Top Bar ══════ -->
 <div class="topbar">
   <div class="topbar-left">
-    <img src="assets/Optix.png" alt="Optix" class="topbar-logo">
-    <span class="topbar-title">Widget Builder</span>
+    <span class="topbar-title">Form Builder</span>
   </div>
   <div class="topbar-right">
     <div class="api-status" id="apiStatus">
