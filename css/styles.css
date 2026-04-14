@@ -516,7 +516,6 @@ body {
 .sort-item .drag-handle {
   color: #ccc;
   font-size: 20px;
-  cursor: grab;
 }
 .sort-item .sort-name { flex: 1; font-size: 14px; }
 .sort-item .sort-remove {

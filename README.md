@@ -54,7 +54,7 @@ Add a canvas in Optix App `Settings file`, for example:
   "canvases": [
     {
       "type": "ADMIN_MAIN_MENU",
-      "title": "Widget Builder",
+      "title": "Form Builder",
       "icon": "link",
       "menu_parent": "settings",
       "admin_role": "MANAGER",
@@ -68,6 +68,8 @@ Notes:
 
 - Use your deployed domain in `url`
 - `#token={token}` is recommended for token handling in browser-only apps
+- When loaded via Canvas, the token is read from the URL automatically — no login prompt appears
+- The settings gear (top right) is hidden when connected via Canvas; if the connection fails, it reappears so the user can retry
 
 ## Security Notes
 
