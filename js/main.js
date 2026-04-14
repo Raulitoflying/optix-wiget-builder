@@ -10,6 +10,7 @@ let resources = [];
 let locations = [];
 let currentTab = 'signup';
 let apiModalEditMode = false;
+let isCanvasMode = false;
 const TAB_STORAGE_KEY = 'optix_current_tab';
 
 // ── API Config Modal ───────────────────────────────────────────────────────────
@@ -52,6 +53,9 @@ function updateApiStatus(status, text) {
   const el = document.getElementById('apiStatus');
   el.className = 'api-status ' + status;
   document.getElementById('apiStatusText').textContent = text;
+  const connected = status === 'connected';
+  document.getElementById('settingsBtn').style.display =
+    (isCanvasMode && connected) ? 'none' : '';
 }
 
 function toggleCardCollapse(cardId, triggerEl) {
@@ -303,6 +307,7 @@ function init() {
   const savedEndpoint = sessionStorage.getItem('optix_endpoint') || 'https://api.optixapp.com/graphql';
 
   if (urlToken) {
+    isCanvasMode = true;
     showApiModal();
     document.getElementById('cfgEndpoint').value = savedEndpoint;
     document.getElementById('cfgToken').value = urlToken;

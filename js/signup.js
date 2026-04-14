@@ -153,7 +153,7 @@ function updateSortableList() {
   if (sortableInstance) sortableInstance.destroy();
   sortableInstance = new Sortable(listEl, {
     animation: 150,
-    handle: '.drag-handle',
+    filter: '.sort-remove',
     ghostClass: 'sortable-ghost',
     onEnd: () => {
       // Reorder selectedItems based on DOM order
