@@ -281,14 +281,15 @@ function updateDropinUrls() {
   } else {
     const u = new URL(`${base}/book/`);
     if (date) u.searchParams.set('date', date);
+    if (type) u.searchParams.set('types', type);
     directUrl = u.toString();
   }
   document.getElementById('dropinDirectUrl').value = directUrl;
 
   // Show warning if unsupported parameters are selected for Direct Link
-  // Direct Link only supports: date and resource (with optional picker)
-  // It does NOT support: location, type, duration, capacity, time
-  const hasUnsupportedParams = location || type || duration || capacity || time;
+  // Direct Link supports: date, types, and resource (with optional picker)
+  // It does NOT support: location, duration, capacity, time
+  const hasUnsupportedParams = location || duration || capacity || time;
   const warningEl = document.getElementById('directLinkWarning');
   if (hasUnsupportedParams) {
     warningEl.style.display = 'block';
