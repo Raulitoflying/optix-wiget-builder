@@ -153,6 +153,8 @@ Add these attributes on `optix-booking-widget`:
 | URL format | Description |
 | --- | --- |
 | `/book?date=2024-03-20` | Set default booking date |
+| `/book?types=Meeting%20Room` | Filter by resource type (URL-encoded, case-sensitive) |
+| `/book?date=2024-03-20&types=Meeting%20Room` | Date + type filter combined |
 | `/book/resource/{ID}` | Deep link to resource detail |
 | `/book/resource/{ID}/pick` | Open date/time picker for resource |
 
