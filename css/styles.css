@@ -60,6 +60,95 @@ body {
   color: #555;
   margin-bottom: 6px;
 }
+/* ── Searchable Select ──────────────────────────────────────────────────────── */
+.searchable-select {
+  position: relative;
+  width: 100%;
+}
+.ss-trigger {
+  position: relative;
+  width: 100%;
+  padding: 10px 36px 10px 14px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fafafa;
+  text-align: left;
+  cursor: pointer;
+  color: #333;
+  transition: border-color .2s, opacity .2s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+.ss-trigger::after {
+  content: '';
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 6px solid #888;
+  pointer-events: none;
+}
+.ss-trigger:focus {
+  outline: none;
+  border-color: #007AFF;
+  background: #fff;
+}
+.searchable-select.ss-open .ss-trigger {
+  border-color: #007AFF;
+  background: #fff;
+}
+.searchable-select.ss-disabled .ss-trigger {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f0f0f0;
+}
+.ss-dropdown {
+  display: none;
+  position: fixed;
+  background: #fff;
+  border: 1px solid #007AFF;
+  border-top: none;
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+  box-shadow: 0 6px 16px rgba(0,0,0,0.12);
+  z-index: 9999;
+  overflow: hidden;
+}
+.ss-dropdown.ss-open { display: block; }
+.ss-search {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  font-family: inherit;
+  background: #f8f9fb;
+  box-sizing: border-box;
+  color: #333;
+}
+.ss-search:focus { outline: none; background: #fff; }
+.ss-options { max-height: 220px; overflow-y: auto; }
+.ss-option {
+  padding: 9px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  color: #333;
+  user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.ss-option:hover { background: #f0f6ff; color: #007AFF; }
+.ss-option.ss-selected { color: #007AFF; font-weight: 500; }
+.ss-option.ss-selected::after { content: '\2713'; font-size: 13px; margin-left: 8px; flex-shrink: 0; }
+.ss-no-results { padding: 12px 14px; font-size: 13px; color: #999; text-align: center; }
+
 .form-group input, .form-group select, .form-group textarea {
   width: 100%;
   padding: 10px 14px;
@@ -532,6 +621,33 @@ body {
   color: #bbb;
   font-size: 14px;
 }
+
+/* ── Plan/Pass Search ─────────────────────────── */
+.plan-search-wrap {
+  position: relative;
+  margin-bottom: 14px;
+}
+.plan-search-wrap .material-icons {
+  position: absolute;
+  left: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 18px;
+  color: #aaa;
+  pointer-events: none;
+}
+.plan-search-wrap input {
+  width: 100%;
+  padding: 9px 14px 9px 34px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  background: #fafafa;
+  box-sizing: border-box;
+  transition: border-color .2s;
+}
+.plan-search-wrap input:focus { outline: none; border-color: #007AFF; background: #fff; }
 
 /* ── Drop-in Parameters ───────────────────────── */
 .params-grid {

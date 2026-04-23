@@ -342,5 +342,145 @@ function init() {
   });
 }
 
+// ── Searchable Select ───────────────────────────────────────────────────────────
+function makeSearchableSelect(selectEl) {
+  if (selectEl._ss) { selectEl._ss.refresh(); return; }
+
+  selectEl.style.display = 'none';
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'searchable-select';
+  selectEl.parentNode.insertBefore(wrapper, selectEl.nextSibling);
+
+  const trigger = document.createElement('button');
+  trigger.type = 'button';
+  trigger.className = 'ss-trigger';
+  wrapper.appendChild(trigger);
+
+  // Append dropdown to body to escape card's overflow:hidden
+  const dropdown = document.createElement('div');
+  dropdown.className = 'ss-dropdown';
+  document.body.appendChild(dropdown);
+
+  const searchInput = document.createElement('input');
+  searchInput.type = 'text';
+  searchInput.className = 'ss-search';
+  searchInput.placeholder = 'Search...';
+  dropdown.appendChild(searchInput);
+
+  const optionsList = document.createElement('div');
+  optionsList.className = 'ss-options';
+  dropdown.appendChild(optionsList);
+
+  function positionDropdown() {
+    const rect = trigger.getBoundingClientRect();
+    dropdown.style.top = rect.bottom + 'px';
+    dropdown.style.left = rect.left + 'px';
+    dropdown.style.width = rect.width + 'px';
+  }
+
+  function syncTrigger() {
+    const opt = selectEl.options[selectEl.selectedIndex];
+    trigger.textContent = opt ? opt.text : '';
+    wrapper.classList.toggle('ss-disabled', selectEl.disabled);
+  }
+
+  function renderOptions(filter) {
+    const q = (filter || '').toLowerCase();
+    const cur = selectEl.value;
+    optionsList.innerHTML = '';
+    let count = 0;
+    Array.from(selectEl.options).forEach(opt => {
+      if (q && !opt.text.toLowerCase().includes(q)) return;
+      count++;
+      const div = document.createElement('div');
+      div.className = 'ss-option' + (opt.value === cur ? ' ss-selected' : '');
+      div.textContent = opt.text;
+      div.dataset.value = opt.value;
+      div.addEventListener('mousedown', e => {
+        e.preventDefault();
+        selectEl.value = opt.value;
+        selectEl.dispatchEvent(new Event('change', { bubbles: true }));
+        closeDropdown();
+      });
+      optionsList.appendChild(div);
+    });
+    if (count === 0) {
+      const el = document.createElement('div');
+      el.className = 'ss-no-results';
+      el.textContent = 'No results';
+      optionsList.appendChild(el);
+    }
+  }
+
+  function openDropdown() {
+    document.querySelectorAll('.searchable-select.ss-open').forEach(el => {
+      if (el !== wrapper && el._ssClose) el._ssClose();
+    });
+    searchInput.value = '';
+    renderOptions();
+    positionDropdown();
+    wrapper.classList.add('ss-open');
+    dropdown.classList.add('ss-open');
+    searchInput.focus();
+  }
+
+  function closeDropdown() {
+    wrapper.classList.remove('ss-open');
+    dropdown.classList.remove('ss-open');
+  }
+
+  wrapper._ssClose = closeDropdown;
+
+  trigger.addEventListener('click', e => {
+    e.stopPropagation();
+    if (selectEl.disabled) return;
+    wrapper.classList.contains('ss-open') ? closeDropdown() : openDropdown();
+  });
+
+  searchInput.addEventListener('input', () => renderOptions(searchInput.value));
+
+  searchInput.addEventListener('keydown', e => {
+    if (e.key === 'Escape') { closeDropdown(); trigger.focus(); }
+    if (e.key === 'Enter') {
+      const first = optionsList.querySelector('.ss-option');
+      if (first) first.dispatchEvent(new MouseEvent('mousedown'));
+    }
+  });
+
+  // Close when clicking outside both the wrapper and the detached dropdown
+  document.addEventListener('click', e => {
+    if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) closeDropdown();
+  });
+
+  // Close on scroll so dropdown doesn't drift from trigger
+  window.addEventListener('scroll', closeDropdown, true);
+
+  new MutationObserver(syncTrigger).observe(selectEl, { attributes: true, attributeFilter: ['disabled'] });
+
+  const origDesc = Object.getOwnPropertyDescriptor(HTMLSelectElement.prototype, 'value');
+  Object.defineProperty(selectEl, 'value', {
+    get() { return origDesc.get.call(this); },
+    set(v) {
+      origDesc.set.call(this, v);
+      syncTrigger();
+      optionsList.querySelectorAll('.ss-option').forEach(d => {
+        d.classList.toggle('ss-selected', d.dataset.value === String(v));
+      });
+    },
+    configurable: true
+  });
+
+  selectEl._ss = {
+    refresh() {
+      syncTrigger();
+      if (dropdown.classList.contains('ss-open')) renderOptions(searchInput.value);
+    }
+  };
+
+  syncTrigger();
+  renderOptions();
+}
+
 // ── DOMContentLoaded Event Listener ────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', init);

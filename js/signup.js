@@ -100,6 +100,16 @@ function renderPlanPassList() {
   }
 
   listEl.innerHTML = html;
+  filterPlanPassList();
+}
+
+// ── Filter Plan/Pass List ─────────────────────────────────────────────────────
+function filterPlanPassList() {
+  const query = (document.getElementById('planPassSearch')?.value || '').toLowerCase().trim();
+  document.querySelectorAll('#planPassList .item-row').forEach(row => {
+    const name = row.querySelector('.item-name')?.textContent?.toLowerCase() || '';
+    row.style.display = (!query || name.includes(query)) ? '' : 'none';
+  });
 }
 
 // ── Toggle Selection ───────────────────────────────────────────────────────────
@@ -287,6 +297,10 @@ function resetSignupParams() {
   // Clear selected items
   selectedItems = [];
   hasManuallyReordered = false;
+
+  // Clear plan/pass search
+  const searchEl = document.getElementById('planPassSearch');
+  if (searchEl) searchEl.value = '';
 
   // Re-render the UI
   renderPlanPassList();
