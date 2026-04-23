@@ -188,6 +188,8 @@ async function loadSignupData() {
   loadingEl.style.display = 'flex';
   listEl.style.display = 'none';
   errorEl.style.display = 'none';
+  const searchWrapEl = document.getElementById('planPassSearchWrap');
+  if (searchWrapEl) searchWrapEl.style.display = 'none';
 
   try {
     const [planRes, productRes, locRes] = await Promise.all([
@@ -274,10 +276,12 @@ async function loadSignupData() {
     locations.forEach(l => {
       signupLocSelect.innerHTML += `<option value="${l.location_id}">${escapeHtml(l.name)}</option>`;
     });
+    makeSearchableSelect(signupLocSelect);
 
     renderPlanPassList();
     loadingEl.style.display = 'none';
     listEl.style.display = 'flex';
+    if (searchWrapEl) { searchWrapEl.style.display = 'block'; document.getElementById('planPassSearch').value = ''; }
   } catch (e) {
     loadingEl.style.display = 'none';
     const meta = getLoadErrorMeta(e);
@@ -369,6 +373,7 @@ async function loadDropinData() {
     locations.forEach(l => {
       locSelect.innerHTML += `<option value="${l.location_id}">${escapeHtml(l.name)}</option>`;
     });
+    makeSearchableSelect(locSelect);
 
     // Populate resource type dropdown (from resourceTypes query)
     const typeSelect = document.getElementById('diType');
@@ -376,6 +381,7 @@ async function loadDropinData() {
     resourceTypes.forEach(type => {
       typeSelect.innerHTML += `<option value="${escapeHtml(type.name)}">${escapeHtml(type.name)}</option>`;
     });
+    makeSearchableSelect(typeSelect);
 
     // Populate resource dropdown (only show drop-in bookable resources)
     const resSelect = document.getElementById('diResource');
@@ -385,6 +391,7 @@ async function loadDropinData() {
       const locName = r.location?.name ? ` (${r.location.name})` : '';
       resSelect.innerHTML += `<option value="${r.resource_id}">${escapeHtml(r.name)}${escapeHtml(locName)}</option>`;
     });
+    makeSearchableSelect(resSelect);
 
     // Update Resource Availability display
     const availabilityDisplayEl = document.getElementById('availabilityDisplay');
