@@ -453,8 +453,10 @@ function makeSearchableSelect(selectEl) {
     if (!wrapper.contains(e.target) && !dropdown.contains(e.target)) closeDropdown();
   });
 
-  // Close on scroll so dropdown doesn't drift from trigger
-  window.addEventListener('scroll', closeDropdown, true);
+  // Close on scroll outside the dropdown so it doesn't drift from trigger
+  window.addEventListener('scroll', e => {
+    if (!dropdown.contains(e.target)) closeDropdown();
+  }, true);
 
   new MutationObserver(syncTrigger).observe(selectEl, { attributes: true, attributeFilter: ['disabled'] });
 
