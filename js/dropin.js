@@ -220,11 +220,11 @@ function updateDropinUrls() {
 
     if (conflict === 'no_one') {
       resourceWarningEl.querySelector('.warning-text').textContent = 'This resource is set to "No one can book this resource"';
-      resourceWarningEl.querySelector('.warning-hint').textContent = 'Drop-in booking is enabled, but no users (including admins) can book this resource. The widget code will still be generated.';
+      resourceWarningEl.querySelector('.warning-hint').textContent = 'Drop-in booking is enabled, but no users (including admins) can book this resource. The embed code will still be generated.';
       resourceWarningEl.classList.add('show');
     } else if (conflict === 'admins_only') {
       resourceWarningEl.querySelector('.warning-text').textContent = 'This resource is set to "Only admins can book"';
-      resourceWarningEl.querySelector('.warning-hint').textContent = 'Drop-in booking is enabled, but public users won\'t be able to book this resource. The widget code will still be generated.';
+      resourceWarningEl.querySelector('.warning-hint').textContent = 'Drop-in booking is enabled, but public users won\'t be able to book this resource. The embed code will still be generated.';
       resourceWarningEl.classList.add('show');
     } else {
       resourceWarningEl.classList.remove('show');
