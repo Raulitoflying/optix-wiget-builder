@@ -146,8 +146,10 @@ body {
 }
 .ss-option:hover { background: #f0f6ff; color: #007AFF; }
 .ss-option.ss-selected { color: #007AFF; font-weight: 500; }
-.ss-option.ss-selected::after { content: '\2713'; font-size: 13px; margin-left: 8px; flex-shrink: 0; }
+.ss-option-right { display: flex; align-items: center; gap: 4px; flex-shrink: 0; margin-left: 8px; }
+.ss-option.ss-selected .ss-option-right::after { content: '\2713'; font-size: 13px; color: #007AFF; }
 .ss-no-results { padding: 12px 14px; font-size: 13px; color: #999; text-align: center; }
+.ss-option-count { font-size: 12px; color: #aaa; }
 
 .form-group input, .form-group select, .form-group textarea {
   width: 100%;

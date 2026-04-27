@@ -318,7 +318,7 @@ async function loadDropinData() {
           data {
             resource_id
             name
-            type { name }
+            type { name has_nonspecific_bookings }
             location { location_id name }
             is_dropin_bookable
             booking_policy {
@@ -386,11 +386,33 @@ async function loadDropinData() {
     // Populate resource dropdown (only show drop-in bookable resources)
     const resSelect = document.getElementById('diResource');
     resSelect.innerHTML = '<option value="">None (show all)</option>';
-    const dropinBookableResources = resources.filter(r => r.is_dropin_bookable);
-    dropinBookableResources.forEach(r => {
+
+    // Specific resources: listed individually
+    const specificResources = resources.filter(r => r.is_dropin_bookable && !r.type?.has_nonspecific_bookings);
+    specificResources.forEach(r => {
       const locName = r.location?.name ? ` (${r.location.name})` : '';
       resSelect.innerHTML += `<option value="${r.resource_id}">${escapeHtml(r.name)}${escapeHtml(locName)}</option>`;
     });
+
+    // Nonspecific resources: group by resource name + location, show one entry with count
+    const nonspecificResources = resources.filter(r => r.is_dropin_bookable && r.type?.has_nonspecific_bookings);
+    const nsGroups = {};
+    nonspecificResources.forEach(r => {
+      const key = `${r.name}||${r.location?.location_id || ''}`;
+      if (!nsGroups[key]) {
+        nsGroups[key] = { name: r.name, locName: r.location?.name, firstId: r.resource_id, count: 0 };
+      }
+      nsGroups[key].count++;
+    });
+    Object.values(nsGroups).forEach(g => {
+      const locPart = g.locName ? ` (${escapeHtml(g.locName)})` : '';
+      const opt = document.createElement('option');
+      opt.value = g.firstId;
+      opt.textContent = `${escapeHtml(g.name)}${locPart}`;
+      opt.dataset.count = g.count;
+      resSelect.appendChild(opt);
+    });
+
     makeSearchableSelect(resSelect);
 
     // Update Resource Availability display

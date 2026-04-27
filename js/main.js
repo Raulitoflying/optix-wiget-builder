@@ -395,8 +395,19 @@ function makeSearchableSelect(selectEl) {
       count++;
       const div = document.createElement('div');
       div.className = 'ss-option' + (opt.value === cur ? ' ss-selected' : '');
-      div.textContent = opt.text;
       div.dataset.value = opt.value;
+      const label = document.createElement('span');
+      label.textContent = opt.text;
+      div.appendChild(label);
+      const right = document.createElement('span');
+      right.className = 'ss-option-right';
+      if (opt.dataset.count) {
+        const badge = document.createElement('span');
+        badge.className = 'ss-option-count';
+        badge.textContent = '×' + opt.dataset.count;
+        right.appendChild(badge);
+      }
+      div.appendChild(right);
       div.addEventListener('mousedown', e => {
         e.preventDefault();
         selectEl.value = opt.value;

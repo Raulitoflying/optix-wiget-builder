@@ -20,7 +20,7 @@ function renderPlanPassList() {
 
   // ── Available Items (can be used in widget) ──
   if (availablePlans.length > 0 || availableProducts.length > 0) {
-    html += '<div class="section-label"><span class="material-icons" style="font-size:16px;vertical-align:middle;color:#34c759;">check_circle</span> Available for Widget</div>';
+    html += '<div class="section-label"><span class="material-icons" style="font-size:16px;vertical-align:middle;color:#34c759;">check_circle</span> Available for Form</div>';
 
     if (availablePlans.length > 0) {
       html += '<div class="subsection-label">Plans</div>';
@@ -59,7 +59,7 @@ function renderPlanPassList() {
 
   // ── Hidden Items (not visible to new users) ──
   if (hiddenPlans.length > 0 || hiddenProducts.length > 0) {
-    html += '<div class="section-label" style="margin-top:20px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;color:#ff9800;">visibility_off</span> Hidden (Not Available in Widget)</div>';
+    html += '<div class="section-label" style="margin-top:20px;"><span class="material-icons" style="font-size:16px;vertical-align:middle;color:#ff9800;">visibility_off</span> Hidden (Not Available in Form)</div>';
     html += '<div class="hint" style="margin-bottom:12px;color:#999;">These plans/passes are not visible to new users.</div>';
 
     if (hiddenPlans.length > 0) {
